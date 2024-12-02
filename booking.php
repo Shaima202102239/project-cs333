@@ -1,8 +1,7 @@
 <?php
 session_start();
 
-// Include the database setup file and get the PDO instance
-$pdo = require 'setup_database.php';
+$pdo = require 'new_data.php';
 
 class Booking {
     private $pdo;
@@ -20,6 +19,7 @@ class Booking {
     public function displayBookingForm() {
         $rooms = $this->getRooms();
         ?>
+
         <!DOCTYPE html>
         <html lang="en">
         <head>
@@ -40,44 +40,21 @@ class Booking {
                     unset($_SESSION['booking_message']); // Clear the message after displaying
                     ?>
                 </div>
+                <form action="" method="POST" class="container" style="margin-top: 20px;">
+                    <input type="hidden" name="cancel" value="true">
+                    <button type="submit" class="alert">Cancel the Booking!</button>
+                </form>
             <?php endif; ?>
 
             <form action="" method="POST" class="container">
                 <label for="room">Select Room Number:</label>
                 <select name="room" id="room" required>
                     <option value="">Choose a room</option>
-                    <option value="021">Room 021</option>
-                    <option value="023">Room 023</option>
-                    <option value="028">Room 028</option>
-                    <option value="029">Room 029</option>
-                    <option value="030">Room 030</option>
-                    <option value="032">Room 032</option>
-                    <option value="049">Room 049</option>
-                    <option value="051">Room 051</option>
-                    <option value="056">Room 056</option>
-                    <option value="057">Room 057</option>
-                    <option value="058">Room 058</option>
-                    <option value="060">Room 060</option>
-                    <option value="077">Room 077</option>
-                    <option value="079">Room 079</option>
-                    <option value="084">Room 084</option>
-                    <option value="1006">Room 1006</option>
-                    <option value="1008">Room 1008</option>
-                    <option value="1010">Room 1010</option>
-                    <option value="1011">Room 1011</option>
-                    <option value="1012">Room 1012</option>
-                    <option value="1014">Room 1014</option>
-                    <option value="1047">Room 1047</option>
-                    <option value="1048">Room 1048</option>
-                    <option value="1050">Room 1050</option>
-                    <option value="1086">Room 1086</option>
-                    <option value="2007">Room 2007</option>
-                    <option value="2010">Room 2010</option>
-                    <option value="2011">Room 2011</option>
-                    <option value="2048">Room 2048</option>
-                    <option value="2051">Room 2051</option>
-                    <option value="2087">Room 2087</option>
-                    <option value="2091">Room 2091</option>
+                    <?php foreach ($rooms as $room): ?>
+                        <option value="<?php echo htmlspecialchars($room['name']); ?>">
+                            <?php echo htmlspecialchars($room['name']); ?>
+                        </option>
+                    <?php endforeach; ?>
                 </select>
 
                 <label for="date">Select Date:</label>
@@ -85,42 +62,91 @@ class Booking {
                 <label for="time">Select Time Slot:</label>
                 <select name="time" id="time" required>
                     <option value="">Choose the time</option>
-                    <option value="08:00-9:00">08:00 AM - 09:00 AM</option>
+                    <option value="08:00-09:00">08:00 AM - 09:00 AM</option>
                     <option value="09:00-10:00">09:00 AM - 10:00 AM</option>
                     <option value="10:00-11:00">10:00 AM - 11:00 AM</option>
-                    <option value="11:00-12:00">11:00 AM - 12:00 PM </option>
-                    <option value="12:00-01:00">12:00 PM - 01:00 PM </option>
+                    <option value="11:00-12:00">11:00 AM - 12:00 PM</option>
+                    <option value="12:00-01:00">12:00 PM - 01:00 PM</option>
                     <option value="01:00-02:00">01:00 PM - 02:00 PM</option>
                     <option value="02:00-03:00">02:00 PM - 03:00 PM</option>
-                    <option value="03:00-04:00">03:00 PM - 04:00 PM </option>
-                    <option value="04:00-05:00">04:00 PM - 05:00 PM </option>
-                    <option value="05:00-06:00">05:00 PM - 06:00 PM </option>
+                    <option value="03:00-04:00">03:00 PM - 04:00 PM</option>
+                    <option value="04:00-05:00">04:00 PM - 05:00 PM</option>
+                    <option value="05:00-06:00">05:00 PM - 06:00 PM</option>
                 </select>
 
-                <button type="submit" class="contrast">Click Here to Book it</button>
+                <button type="submit" name="book" class="contrast">Click Here to Book it</button>
             </form>
         </div>
         </body>
         </html>
         <?php
     }
+
+    public function bookRoom($room_id, $date, $time) {
+        // the SQL statement to insert into the booking table
+        $stmt = $this->pdo->prepare("INSERT INTO bookings VALUES ($room_id, $date, $time)");
+
+        // Store the booking details in the session for cancellation
+        $_SESSION['room_id'] = $room_id;
+        $_SESSION['date'] = $date;
+        $_SESSION['time'] = $time;
+    }
+
+
+    public function checkForConflict($room_id, $start_time, $end_time, $date) {
+        // Prepare the query
+        $sql = "SELECT * FROM bookings 
+                WHERE room_id = :room_id 
+                AND date = :date 
+                AND (time_slot LIKE :time_slot)";
+        
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindParam(':room_id', $room_id, PDO::PARAM_INT);
+        $stmt->bindParam(':date', $date, PDO::PARAM_STR);
+        $stmt->bindValue(':time_slot', $start_time . '%', PDO::PARAM_STR);
+        
+        // Check if any rows are returned
+        if ($stmt->rowCount() > 0) {
+            return false; // It means the room is not available
+        }
+        return true; // it will mean the room is available
+    }
+
 }
 
-// Create an instance of Booking
 $booking = new Booking($pdo);
 
-// Check if the form was submitted
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $room_id = $_POST['room'];
-    $date = $_POST['date'];
-    $time = $_POST['time'];
-
-    // Store the booking message in the session
-    $_SESSION['booking_message'] = "You have booked a room ".htmlspecialchars($room_id). " on " . htmlspecialchars($date) . " at " . htmlspecialchars($time) . ".";
+    if (isset($_POST['book'])) {
+        $room_id = $_POST['room'];
+        $date = $_POST['date'];
+        $time = $_POST['time'];
+            
+        // Split time into start and end
+        list($start_time, $end_time) = explode('-', $time);
     
-    // Redirect to the same page to avoid form resubmission
-    header("Location: " . $_SERVER['PHP_SELF']);
-    exit; // Stop further script execution
+        // Check if there is any conflict 
+        if ($booking->checkForConflict($room_id, $start_time, $end_time, $date)) {
+            // Call the method to book the room
+            $booking->bookRoom($room_id, $date, $time);
+            $_SESSION['booking_message'] = "You have booked room " . htmlspecialchars($room_id) . " on " . htmlspecialchars($date) . " at " . htmlspecialchars($time) . ".";
+        } else {
+            $_SESSION['booking_message'] = "Conflict detected: The room is already booked for this time!";
+            }
+            
+        // Redirect to the same page 
+        header("Location: " . $_SERVER['PHP_SELF']);
+        exit; 
+        } 
+    if (isset($_POST['cancel'])) {
+        unset($_SESSION['booking_message']); // Clear the booking message
+        $_SESSION['booking_message'] = "Your booking has been canceled.";
+        
+        // Redirect to the same page 
+        header("Location: " . $_SERVER['PHP_SELF']);
+        exit; 
+    }
+
 }
 
 // Display the booking form
