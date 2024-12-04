@@ -86,6 +86,78 @@ if (isset($_POST['update_profile'])) {
     }
 }
 
+// Fetch user data
+$stmt = $conn->prepare("SELECT * FROM `user_form` WHERE id = ?");
+$stmt->bind_param('i', $user_id);
+$stmt->execute();
+$result = $stmt->get_result();
+$fetch = $result->fetch_assoc();
+$stmt->close();
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Profile</title>
+    <!-- Include Bootstrap for styling -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="card">
+            <div class="card-body">
+                <h3 class="card-title text-center">Update Profile</h3>
+
+                <?php if (!empty($message)): ?>
+                    <div class="alert alert-info">
+                        <?php foreach ($message as $msg): ?>
+                            <p><?= htmlspecialchars($msg) ?></p>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+
+                <form action="" method="post" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="update_name" class="form-label">Username:</label>
+                        <input type="text" name="update_name" id="update_name" value="<?= htmlspecialchars($fetch['name']) ?>" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="update_email" class="form-label">Email:</label>
+                        <input type="email" name="update_email" id="update_email" value="<?= htmlspecialchars($fetch['email']) ?>" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="update_image" class="form-label">Update Your Picture:</label>
+                        <input type="file" name="update_image" id="update_image" accept="image/jpg, image/jpeg, image/png" class="form-control">
+                        <img src="<?= $fetch['image'] ? 'uploaded_img/' . htmlspecialchars($fetch['image']) : 'images/default-avatar.png' ?>" alt="Profile Image" class="img-thumbnail mt-3" width="150">
+                    </div>
+                    <div class="mb-3">
+                        <label for="old_pass" class="form-label">Old Password:</label>
+                        <input type="password" name="old_pass" id="old_pass" class="form-control" placeholder="Enter current password">
+                    </div>
+                    <div class="mb-3">
+                        <label for="new_pass" class="form-label">New Password:</label>
+                        <input type="password" name="new_pass" id="new_pass" class="form-control" placeholder="Enter new password">
+                    </div>
+                    <div class="mb-3">
+                        <label for="confirm_pass" class="form-label">Confirm Password:</label>
+                        <input type="password" name="confirm_pass" id="confirm_pass" class="form-control" placeholder="Confirm new password">
+                    </div>
+                    <div class="text-center">
+                        <button type="submit" name="update_profile" class="btn btn-primary">Update Profile</button>
+                        <a href="home.php" class="btn btn-secondary">Go Back</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+
 
 
 
