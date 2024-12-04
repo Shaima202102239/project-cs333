@@ -57,6 +57,36 @@ if (isset($_POST['update_profile'])) {
         }
     }
 
+    // Handle image upload
+    if (!empty($_FILES['update_image']['name'])) {
+        $allowed_types = ['image/jpg', 'image/jpeg', 'image/png'];
+        $update_image = $_FILES['update_image'];
+        $image_type = mime_content_type($update_image['tmp_name']);
+        $image_size = $update_image['size'];
+        $image_name = uniqid() . '-' . basename($update_image['name']);
+        $upload_dir = 'uploaded_img/' . $image_name;
+
+        if (in_array($image_type, $allowed_types)) {
+            if ($image_size <= 2000000) {
+                if (move_uploaded_file($update_image['tmp_name'], $upload_dir)) {
+                    $stmt = $conn->prepare("UPDATE `user_form` SET image = ? WHERE id = ?");
+                    $stmt->bind_param('si', $image_name, $user_id);
+                    $stmt->execute();
+                    $stmt->close();
+                    $message[] = 'Image updated successfully!';
+                } else {
+                    $message[] = 'Failed to upload image.';
+                }
+            } else {
+                $message[] = 'Image is too large. Maximum size is 2MB.';
+            }
+        } else {
+            $message[] = 'Invalid image format. Only JPG, JPEG, and PNG are allowed.';
+        }
+    }
+}
+
+
 
 
 
