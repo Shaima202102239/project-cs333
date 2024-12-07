@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-$pdo = require 'new_data.php';
+$pdo = require 'database.php';
 
 class Booking {
     private $pdo;
@@ -11,8 +11,8 @@ class Booking {
     }
 
     public function getRooms() {
-        // Fetch available rooms from the database
-        $stmt = $this->pdo->query("SELECT id, name FROM rooms");
+        // Fetch available rooms from the database and then we'll use them in the form 
+        $stmt = $this->pdo->query("SELECT name FROM rooms");
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
@@ -20,6 +20,7 @@ class Booking {
         $rooms = $this->getRooms();
         ?>
 
+        <!-- The booking Form -->
         <!DOCTYPE html>
         <html lang="en">
         <head>
@@ -37,7 +38,7 @@ class Booking {
                 <div class="alert alert-success">
                     <?php
                     echo htmlspecialchars($_SESSION['booking_message']);
-                    unset($_SESSION['booking_message']); // Clear the message after displaying
+                    unset($_SESSION['booking_message']);
                     ?>
                 </div>
                 <form action="" method="POST" class="container" style="margin-top: 20px;">
@@ -51,12 +52,11 @@ class Booking {
                 <select name="room" id="room" required>
                     <option value="">Choose a room</option>
                     <?php foreach ($rooms as $room): ?>
-                        <option value="<?php echo htmlspecialchars($room['name']); ?>">
-                            <?php echo htmlspecialchars($room['name']); ?>
-                        </option>
+                    <option value="<?php echo htmlspecialchars($room['name']); ?>">
+                    <?php echo htmlspecialchars($room['name']); ?>
+                    </option>
                     <?php endforeach; ?>
                 </select>
-
                 <label for="date">Select Date:</label>
                 <input type="date" name="date" id="date" required>
                 <label for="time">Select Time Slot:</label>
@@ -83,33 +83,49 @@ class Booking {
     }
 
     public function bookRoom($room_id, $date, $time) {
-        // the SQL statement to insert into the booking table
-        $stmt = $this->pdo->prepare("INSERT INTO bookings VALUES ($room_id, $date, $time)");
+        // Prepare and execute the SQL statement to insert the reservation into the booking table
+        $stmt = $this->pdo->prepare("INSERT INTO bookings (room_no, booking_date, time_slot) VALUES (:room_no, :booking_date, :time_slot)");
+        
+        $stmt->bindParam(':room_no', $room_id, PDO::PARAM_STR); // Assuming room_no is stored as a string
+        $stmt->bindParam(':booking_date', $date, PDO::PARAM_STR);
+        $stmt->bindParam(':time_slot', $time, PDO::PARAM_STR);
 
-        // Store the booking details in the session for cancellation
+        $stmt->execute();
+        
         $_SESSION['room_id'] = $room_id;
         $_SESSION['date'] = $date;
         $_SESSION['time'] = $time;
     }
 
-
-    public function checkForConflict($room_id, $start_time, $end_time, $date) {
-        // Prepare the query
+    public function checkForConflict($room_id, $time, $date) {
+        // Prepare the query to check for time conflicts
         $sql = "SELECT * FROM bookings 
-                WHERE room_id = :room_id 
-                AND date = :date 
-                AND (time_slot LIKE :time_slot)";
-        
+                WHERE room_no = :room_id 
+                AND booking_date = :date 
+                AND time_slot = :time";
+
         $stmt = $this->pdo->prepare($sql);
-        $stmt->bindParam(':room_id', $room_id, PDO::PARAM_INT);
-        $stmt->bindParam(':date', $date, PDO::PARAM_STR);
-        $stmt->bindValue(':time_slot', $start_time . '%', PDO::PARAM_STR);
         
+        $stmt->bindParam(':room_id', $room_id, PDO::PARAM_STR); 
+        $stmt->bindParam(':date', $date, PDO::PARAM_STR);
+        $stmt->bindParam(':time', $time, PDO::PARAM_STR);
+        $stmt->execute();
+    
         // Check if any rows are returned
-        if ($stmt->rowCount() > 0) {
-            return false; // It means the room is not available
-        }
-        return true; // it will mean the room is available
+        return $stmt->rowCount() === 0; // if there rowCount =0 it means it's available for booking
+    }
+
+    public function cancelBooking ($room_id, $date, $time){
+        $sql = "DELETE FROM bookings WHERE room_no = :room_id 
+                AND booking_date = :date 
+                AND time_slot = :time";
+        $stmt = $this->pdo->prepare($sql);
+        
+        $stmt->bindParam(':room_id', $room_id, PDO::PARAM_STR); 
+        $stmt->bindParam(':date', $date, PDO::PARAM_STR);
+        $stmt->bindParam(':time', $time, PDO::PARAM_STR);
+        $stmt->execute();
+
     }
 
 }
@@ -121,32 +137,40 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $room_id = $_POST['room'];
         $date = $_POST['date'];
         $time = $_POST['time'];
-            
-        // Split time into start and end
-        list($start_time, $end_time) = explode('-', $time);
     
-        // Check if there is any conflict 
-        if ($booking->checkForConflict($room_id, $start_time, $end_time, $date)) {
+        // Check for availability
+        if ($booking->checkForConflict($room_id, $time, $date)) {
             // Call the method to book the room
             $booking->bookRoom($room_id, $date, $time);
             $_SESSION['booking_message'] = "You have booked room " . htmlspecialchars($room_id) . " on " . htmlspecialchars($date) . " at " . htmlspecialchars($time) . ".";
         } else {
             $_SESSION['booking_message'] = "Conflict detected: The room is already booked for this time!";
-            }
-            
+        }
+        
         // Redirect to the same page 
         header("Location: " . $_SERVER['PHP_SELF']);
         exit; 
-        } 
+    } 
+    
     if (isset($_POST['cancel'])) {
-        unset($_SESSION['booking_message']); // Clear the booking message
-        $_SESSION['booking_message'] = "Your booking has been canceled.";
+        // Retrieve booking details from session
+        if (isset($_SESSION['room_id'], $_SESSION['date'], $_SESSION['time'])) {
+            $room_id = $_SESSION['room_id'];
+            $date = $_SESSION['date'];
+            $time = $_SESSION['time'];
+            
+            // Cancel the booking
+            $booking->cancelBooking($room_id, $date, $time);
+            unset($_SESSION['room_id'], $_SESSION['date'], $_SESSION['time']); // Clear session data
+            $_SESSION['booking_message'] = "Your booking has been canceled.";
+        } else {
+            $_SESSION['booking_message'] = "No booking to cancel.";
+        }
         
         // Redirect to the same page 
         header("Location: " . $_SERVER['PHP_SELF']);
         exit; 
     }
-
 }
 
 // Display the booking form
