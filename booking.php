@@ -161,7 +161,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             
             // Cancel the booking
             $booking->cancelBooking($room_id, $date, $time);
-            unset($_SESSION['room_id'], $_SESSION['date'], $_SESSION['time']); // Clear session data
+            unset($_SESSION['room_id'], $_SESSION['date'], $_SESSION['time']); 
             $_SESSION['booking_message'] = "Your booking has been canceled.";
         } else {
             $_SESSION['booking_message'] = "No booking to cancel.";
