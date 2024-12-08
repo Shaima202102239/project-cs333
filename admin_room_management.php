@@ -55,13 +55,11 @@ $stmt->close();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage Rooms</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <div class="container mt-5">
+    <div class="container">
         <h3 class="text-center">Manage Rooms</h3>
-        <!-- Add Room Form -->
         <form method="post">
             <div class="mb-3">
                 <label for="room_name" class="form-label">Room Name</label>
@@ -75,12 +73,11 @@ $stmt->close();
                 <label for="equipment" class="form-label">Equipment</label>
                 <input type="text" name="equipment" id="equipment" class="form-control" required>
             </div>
-            <button type="submit" name="add_room" class="btn btn-success">Add Room</button>
+            <button type="submit" name="add_room" class="btn">Add Room</button>
         </form>
 
-        <!-- Room List -->
-        <h4 class="mt-4">Existing Rooms</h4>
-        <table class="table table-striped">
+        <h4 >Existing Rooms</h4>
+        <table class="table">
             <thead>
                 <tr>
                     <th>Room Name</th>
@@ -96,7 +93,7 @@ $stmt->close();
                     <td><?= htmlspecialchars($room['capacity']) ?></td>
                     <td><?= htmlspecialchars($room['equipment']) ?></td>
                     <td>
-                        <!-- Edit and Delete buttons -->
+                        <!-- Edit and Delete buttons-->
                         <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editModal<?= $room['id'] ?>">Edit</button>
                         <a href="?delete_room=<?= $room['id'] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this room?')">Delete</a>
                     </td>
@@ -125,7 +122,7 @@ $stmt->close();
                                         <label for="equipment" class="form-label">Equipment</label>
                                         <input type="text" name="equipment" value="<?= htmlspecialchars($room['equipment']) ?>" class="form-control" required>
                                     </div>
-                                    <button type="submit" name="edit_room" class="btn btn-success">Update Room</button>
+                                    <button type="submit" name="edit_room" class="btn">Update Room</button>
                                 </form>
                             </div>
                         </div>
@@ -135,8 +132,5 @@ $stmt->close();
             </tbody>
         </table>
     </div>
-
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
