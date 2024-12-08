@@ -19,6 +19,32 @@ try {
         )
     ");
 
+    // Create users table (for admins and users)
+    $pdo->exec(
+        "CREATE TABLE IF NOT EXISTS users (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        username VARCHAR(255) NOT NULL UNIQUE,
+        email VARCHAR(255) NOT NULL UNIQUE,
+        password VARCHAR(255) NOT NULL,
+        role ENUM('admin', 'user') DEFAULT 'user',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    )");
+
+    // Booking data 
+
+
+
+    // Create admin_actions table (to track admin activities)
+    $pdo->exec(
+        "CREATE TABLE IF NOT EXISTS admin_actions (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        admin_id INT NOT NULL,  -- Foreign key to users
+        action VARCHAR(255) NOT NULL,
+        action_details TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (admin_id) REFERENCES users(id)
+    )");
 
    // reserved rooms table table 
 $pdo->exec("
