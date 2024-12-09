@@ -1,26 +1,28 @@
 <?php
 
 include 'config.php';
-session_start();
+session_start();  // Start the session
 
-// check if the form is submitted 
-if(isset($_POST['submit'])){
+if (isset($_POST['submit'])) {
 
-   //This retrieves the email entered by the user in the form and sanitizes it to prevent SQL injection & same goes for the password, it use md5()function to hash the password (for security).
+   // Sanitize user inputs to prevent SQL injection
    $email = mysqli_real_escape_string($conn, $_POST['email']);
-   $pass = mysqli_real_escape_string($conn, md5($_POST['password']));
+   $pass = mysqli_real_escape_string($conn, md5($_POST['password']));  // Encrypt password using MD5
 
+   // Query to check if the user exists with the given email and password
    $select = mysqli_query($conn, "SELECT * FROM `user_form` WHERE email = '$email' AND password = '$pass'") or die('query failed');
-   
-//checks if the email and password match a user in the database 
-   if(mysqli_num_rows($select) > 0){
+
+   // If user exists, create session and redirect to homepage
+   if (mysqli_num_rows($select) > 0) {
       $row = mysqli_fetch_assoc($select);
-      // it stores the user's ID in the session and redirects to the homepage.
-      $_SESSION['user_id'] = $row['id'];
-      header('location:homepage.html');
-      // if no user is found
-   }else{
-      $message[] = 'incorrect email or password!';
+      $_SESSION['user_id'] = $row['id'];  // Store user ID in session
+      $_SESSION['first_name'] = $row['first_name'];  // Store first name in session
+      $_SESSION['last_name'] = $row['last_name'];    // Store last name in session (optional)
+      $_SESSION['email'] = $row['email'];            // Store email in session (optional)
+
+      header('location: home.php');  // Redirect to homepage upon successful login
+   } else {
+      $message[] = 'Incorrect email or password!';  // Display error message if credentials don't match
    }
 
 }
@@ -33,31 +35,31 @@ if(isset($_POST['submit'])){
    <meta charset="UTF-8">
    <meta http-equiv="X-UA-Compatible" content="IE=edge">
    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <title>login</title>
+   <title>Login</title>
 
-   <!-- custom css file link  -->
+   <!-- Custom CSS file link -->
    <link rel="stylesheet" href="css/style2.css">
-
 </head>
 <body>
-   
+
 <div class="form-container">
-<!--collects the user's email and password and submits via POST---> 
+
    <form action="" method="post" enctype="multipart/form-data">
-      <h3>login now</h3>
-      <?PHP
-//If no user is found, an error message (incorrect email or password!) is displayed
-      if(isset($message)){
-         foreach($message as $message){
+      <h3>Login Now</h3>
+      
+      <?php
+      // Display any error messages if they exist
+      if (isset($message)) {
+         foreach ($message as $message) {
             echo '<div class="message">'.$message.'</div>';
          }
       }
       ?>
-      <input type="email" name="email" placeholder="enter email" class="box" required>
-      <input type="password" name="password" placeholder="enter password" class="box" required>
-      
-      <input type="submit" name="submit" value="login now" class="btn">
-      <p> Don't have an account? <a href="register.php">regiser now</a></p>
+
+      <input type="email" name="email" placeholder="Enter email" class="box" required>
+      <input type="password" name="password" placeholder="Enter password" class="box" required>
+      <input type="submit" name="submit" value="Login Now" class="btn">
+      <p>Don't have an account? <a href="register.php">Register Now</a></p>
    </form>
 
 </div>
