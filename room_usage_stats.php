@@ -1,11 +1,15 @@
 <?php
-include 'config.php';
+include 'database.php';
 
 //here
-$stmt = $conn->prepare("SELECT * FROM room_usage ORDER BY usage_count DESC");
+$stmt = $pdo->prepare("SELECT * FROM room_usage ORDER BY usage_count DESC");
 $stmt->execute();
-$rooms = $stmt->get_result();
-$stmt->close();
+$rooms = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+$stm2 = "INSERT INTO room_usage (room_no, usage_count, last_booked) VALUES ('ROOM 028', 1, '2024-12-08 17:56:10'), 
+('ROOM 030', 1, '2024-12-08 17:58:29')" ;
+
+$pdo->exec($stm2); 
 ?>
 
 <!DOCTYPE html>
@@ -29,13 +33,13 @@ $stmt->close();
                 </tr>
             </thead>
             <tbody>
-                <?php while ($room = $rooms->fetch_assoc()): ?>
+                <?php foreach ($rooms as $room): ?>
                 <tr>
                     <td><?= htmlspecialchars($room['room_no']) ?></td>
                     <td><?= htmlspecialchars($room['usage_count']) ?></td>
                     <td><?= htmlspecialchars($room['last_booked']) ?></td>
                 </tr>
-                <?php endwhile; ?>
+                <?php endforeach; ?>
             </tbody>
         </table>
     </div>
