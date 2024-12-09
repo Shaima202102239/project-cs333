@@ -1,8 +1,7 @@
 <?php
-// Include the database connection (which uses PDO)
+
 include 'database.php';
 
-// Initialize reports as null to prevent errors outside of POST request
 $reports = null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
