@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - Room Booking System</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <style>
+        /* Button styles */
+        .btn {
+            display: inline-block;
+            margin: 10px;
+            padding: 10px 20px;
+            background-color: #007bff; /* Primary color */
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            border: none; /* Remove border */
+            cursor: pointer; /* Change cursor to pointer */
+            transition: background-color 0.3s; /* Smooth transition on hover */
+        }
+
+        .btn:hover {
+            background-color: #0056b3; /* Darker shade on hover */
+        }
+
+        /* Additional styling for better layout */
+        .container {
+            max-width: 800px;
+            margin: 0 auto; /* Center the container */
+            padding: 20px;
+        }
+
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="container mt-5">
+        <h1 class="text-center">Welcome to the Room Booking System</h1>
+        <p class="text-center">Easily book rooms, manage your profile, and access all features with just a few clicks.</p>
+
+        <div class="row text-center mt-4">
+            <div class="col">
+                <h3>YOUR profile</h3>
+                <p>Update your informations and picture.</p>
+                <a href="profile.php" class="btn">my profile</a>
+            </div>
+            <div class="col">
+                <h3>IT Rooms</h3>
+                <p>for more details about the rooms</p>
+                <a href="admin_room_management.php" class="btn">Room Details</a>
+            </div>
+            <div class="col">
+                <h3>Booking</h3>
+                <p>Reserve a room</p>
+                <a href="bookings.php" class="btn">BOOK NOW</a>
+            </div>
+            <div class="col">
+                <h3>reporting and analyizing</h3>
+                <a href="reporting.php" class="btn">analytics</a>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
