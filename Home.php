@@ -12,7 +12,7 @@
     try {
         session_start();
         include("shared/header.php"); // Include header
-        require("database/roomBookingDB.php"); // Database connection
+        require("database.php"); // Database connection
     ?>
     
     <div class="container mt-5">
