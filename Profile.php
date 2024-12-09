@@ -85,7 +85,6 @@ if (isset($_POST['update_profile'])) {
         }
     }
 }
-
 // Fetch user data
 $stmt = $conn->prepare("SELECT * FROM `user_form` WHERE id = ?");
 $stmt->bind_param('i', $user_id);
