@@ -1,7 +1,7 @@
 <?php
 // Database configuration
 $host = 'localhost';
-$dbname = 'it_college_room_booking'; // Database name
+$dbname = 'it_college_rooms3'; // Database name
 $username = 'root';
 $password = '';
 
@@ -18,9 +18,8 @@ try {
     // 1. Rooms Table
     $pdo->exec("
         CREATE TABLE IF NOT EXISTS rooms (
-            name VARCHAR(50) NOT NULL,
-            PRIMARY KEY (name)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+            name VARCHAR(50) PRIMARY KEY
+        )
     ");
 
     // 2. Users Table
@@ -35,6 +34,7 @@ try {
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
     ");
+   
 
     // 3. Admin Actions Table
     $pdo->exec("
@@ -47,20 +47,17 @@ try {
             FOREIGN KEY (admin_id) REFERENCES users(id)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
     ");
-
-    // 4. Bookings Table
+    
+    // 4. Bookings Table 
     $pdo->exec("
         CREATE TABLE IF NOT EXISTS bookings (
             id INT AUTO_INCREMENT PRIMARY KEY,
             room_no VARCHAR(20) NOT NULL,
             booking_date DATE NOT NULL,
             time_slot VARCHAR(20) NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            user_id INT DEFAULT NULL,
-            FOREIGN KEY (room_no) REFERENCES rooms(name) ON DELETE CASCADE,
-            FOREIGN KEY (user_id) REFERENCES users(id)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-    ");
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        ");
 
     // 5. Events Table
     $pdo->exec("
@@ -73,17 +70,20 @@ try {
             FOREIGN KEY (created_by) REFERENCES users(id)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
     ");
+    
 
     // 6. Room Usage Table
     $pdo->exec("
-        CREATE TABLE IF NOT EXISTS room_usage (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            room_no VARCHAR(50) DEFAULT NULL,
-            usage_count INT DEFAULT 0,
-            last_booked TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (room_no) REFERENCES rooms(name) ON DELETE CASCADE
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-    ");
+    CREATE TABLE IF NOT EXISTS room_usage (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        room_no VARCHAR(50) DEFAULT NULL,
+        usage_count INT DEFAULT 0,
+        last_booked TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (room_no) REFERENCES rooms(name) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+");
+
+    
 
     // Insert default room data
     $stmt = $pdo->query("SELECT COUNT(*) FROM rooms");
@@ -125,31 +125,10 @@ try {
         ");
     }
 
-    // Insert default bookings data (from SQL dump example)
-    $stmt = $pdo->query("SELECT COUNT(*) FROM bookings");
-    if ($stmt->fetchColumn() == 0) {
-        $pdo->exec("
-            INSERT INTO bookings (room_no, booking_date, time_slot, created_at, user_id) VALUES
-            ('Room 028', '2024-12-17', '10:00-11:00', '2024-12-08 17:56:10', NULL),
-            ('Room 030', '2024-12-13', '11:00-12:00', '2024-12-08 17:58:29', 4)
-        ");
-    }
-
-    // Insert default room usage data (from SQL dump example)
-    $stmt = $pdo->query("SELECT COUNT(*) FROM room_usage");
-    if ($stmt->fetchColumn() == 0) {
-        $pdo->exec("
-            INSERT INTO room_usage (room_no, usage_count, last_booked) VALUES
-            ('Room 028', 1, '2024-12-08 17:56:10'),
-            ('Room 030', 1, '2024-12-08 17:58:29')
-        ");
-    }
-
-    echo "Database setup and updates completed successfully.";
 } catch (PDOException $e) {
     // Handle exceptions
     echo "Database error: " . $e->getMessage();
     exit;
 }
+return $pdo;
 ?>
-
