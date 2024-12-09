@@ -2,17 +2,22 @@
 
 include 'config.php';
 if (isset($_POST['submit'])) {
+
+   // retrieve and sanitize inputs 
+   //the md5() function hashes the password and confirm password for security
    $name = mysqli_real_escape_string($conn, $_POST['name']);
    $email = mysqli_real_escape_string($conn, $_POST['email']);
    $pass = mysqli_real_escape_string($conn, md5($_POST['password']));
    $cpass = mysqli_real_escape_string($conn, md5($_POST['cpassword']));
-   $image = $_FILES['image']['name'];
-   $image_size = $_FILES['image']['size'];
-   $image_tmp_name = $_FILES['image']['tmp_name'];
-   $image_folder = 'uploaded_img/' . $image;
+
+   
+   $image = $_FILES['image']['name']; // file name
+   $image_size = $_FILES['image']['size']; // size in bytes 
+   $image_tmp_name = $_FILES['image']['tmp_name']; // the temporary storage path for the uploaded file
+   $image_folder = 'uploaded_img/' . $image; //The final destination folder for the uploaded image
 
    // Corrected regular expression for the email format
-   $email_regex = "/^(2019|20[2-9][0-9]).*@.*$/";
+   $email_regex = "/^(2019|20[2-9][0-9]).*@.*$/"; //must start with 2019 or later years
 
    if (!preg_match($email_regex, $email)) {
       $message[] = 'Email format is invalid! It should start with 2019 or a year above.';
@@ -67,6 +72,7 @@ if (isset($_POST['submit'])) {
          }
       }
       ?>
+         <!--fields collect user information-->
       <input type="text" name="name" placeholder="enter username" class="box" required>
       <input type="email" name="email" placeholder="e.g., 2019abcd@example.com" class="box" required>
       <input type="password" name="password" placeholder="enter password" class="box" required>
