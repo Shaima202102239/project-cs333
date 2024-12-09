@@ -1,19 +1,28 @@
 <?php
+// Include the database connection (which uses PDO)
 include 'database.php';
 
+// Initialize reports as null to prevent errors outside of POST request
+$reports = null;
 
-//here
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $start_date = $_POST['start_date'] ?? null;
     $end_date = $_POST['end_date'] ?? null;
-    $stmt = $conn->prepare("SELECT room_no, COUNT(*) AS bookings FROM bookings WHERE booking_date BETWEEN ? AND ? GROUP BY room_no");
-    $stmt->bind_param('ss', $start_date, $end_date);
+    
+    // Prepare the query with placeholders
+    $stmt = $pdo->prepare("SELECT room_no, COUNT(*) AS bookings FROM bookings WHERE booking_date BETWEEN :start_date AND :end_date GROUP BY room_no");
+    
+    // Bind the parameters to prevent SQL injection
+    $stmt->bindParam(':start_date', $start_date);
+    $stmt->bindParam(':end_date', $end_date);
+    
+    // Execute the statement
     $stmt->execute();
-    $reports = $stmt->get_result();
-    $stmt->close();
-} else {
-    $reports = [];
+    
+    // Fetch the result
+    $reports = $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
+
 ?>
 
 <!DOCTYPE html>
@@ -44,12 +53,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </tr>
             </thead>
             <tbody>
-                <?php while ($report = $reports->fetch_assoc()): ?>
-                <tr>
-                    <td><?= htmlspecialchars($report['room_no']) ?></td>
-                    <td><?= htmlspecialchars($report['bookings']) ?></td>
-                </tr>
-                <?php endwhile; ?>
+                <?php if ($reports && count($reports) > 0): ?>
+                    <?php foreach ($reports as $report): ?>
+                    <tr>
+                        <td><?= htmlspecialchars($report['room_no']) ?></td>
+                        <td><?= htmlspecialchars($report['bookings']) ?></td>
+                    </tr>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <tr><td colspan="2">No bookings found for the selected dates.</td></tr>
+                <?php endif; ?>
             </tbody>
         </table>
     </div>
