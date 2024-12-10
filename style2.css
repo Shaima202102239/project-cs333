@@ -38,9 +38,9 @@ body {
 }
 
 .form-container {
-   width: 90%; /* Responsive width      https://wallpapers.com/images/featured/study-background-cz2vn2jooatvsd2p.webp       * /
-   max-width: 400px; /* Limit max width for larger screens */
-   margin: 20px auto; /* Center container */
+   width: 90%; 
+   max-width: 400px; 
+   margin: 20px auto; 
    padding: 15px;
    background-color: var(--light-bg); 
    display: flex;
@@ -212,7 +212,7 @@ header {
    top: 0; /* Ensure it stays at the top */
    left: 0; /* Align it to the left edge */
    right: 0; /* Ensure it spans the whole width */
-   z-index: 100; /* Ensure it's above other elements */
+   z-index: 100; 
 }
 
 .header-container {
